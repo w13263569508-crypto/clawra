@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 
 /**
- * Clawra - Selfie Skill Installer for OpenClaw
+ * Clawra - OpenClaw 自拍技能安装程序
  *
- * npx clawra@latest
+ * 使用方法：npx clawra@latest
  */
 
 const fs = require("fs");
@@ -12,7 +12,7 @@ const readline = require("readline");
 const { execSync, spawn } = require("child_process");
 const os = require("os");
 
-// Colors for terminal output
+// 终端输出颜色定义
 const colors = {
   reset: "\x1b[0m",
   bright: "\x1b[1m",
@@ -27,7 +27,7 @@ const colors = {
 
 const c = (color, text) => `${colors[color]}${text}${colors.reset}`;
 
-// Paths
+// 路径定义
 const HOME = os.homedir();
 const OPENCLAW_DIR = path.join(HOME, ".openclaw");
 const OPENCLAW_CONFIG = path.join(OPENCLAW_DIR, "openclaw.json");
@@ -38,7 +38,7 @@ const IDENTITY_MD = path.join(OPENCLAW_WORKSPACE, "IDENTITY.md");
 const SKILL_NAME = "clawra-selfie";
 const SKILL_DEST = path.join(OPENCLAW_SKILLS_DIR, SKILL_NAME);
 
-// Get the package root (where this CLI was installed from)
+// 获取包根目录（当前 CLI 安装来源）
 const PACKAGE_ROOT = path.resolve(__dirname, "..");
 
 function log(msg) {
@@ -65,7 +65,7 @@ function logWarn(msg) {
   console.log(`${c("yellow", "!")} ${msg}`);
 }
 
-// Create readline interface
+// 创建命令行输入接口
 function createPrompt() {
   return readline.createInterface({
     input: process.stdin,
@@ -73,7 +73,7 @@ function createPrompt() {
   });
 }
 
-// Ask a question and get answer
+// 提问并获取用户输入
 function ask(rl, question) {
   return new Promise((resolve) => {
     rl.question(question, (answer) => {
@@ -82,7 +82,7 @@ function ask(rl, question) {
   });
 }
 
-// Check if a command exists
+// 检查命令是否存在
 function commandExists(cmd) {
   try {
     execSync(`which ${cmd}`, { stdio: "ignore" });
@@ -92,7 +92,7 @@ function commandExists(cmd) {
   }
 }
 
-// Open URL in browser
+// 在浏览器中打开 URL
 function openBrowser(url) {
   const platform = process.platform;
   let cmd;
@@ -113,7 +113,7 @@ function openBrowser(url) {
   }
 }
 
-// Read JSON file safely
+// 安全读取 JSON 文件
 function readJsonFile(filePath) {
   try {
     const content = fs.readFileSync(filePath, "utf8");
@@ -123,12 +123,12 @@ function readJsonFile(filePath) {
   }
 }
 
-// Write JSON file with formatting
+// 格式化写入 JSON 文件
 function writeJsonFile(filePath, data) {
   fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + "\n");
 }
 
-// Deep merge objects
+// 深度合并对象
 function deepMerge(target, source) {
   const result = { ...target };
   for (const key in source) {
@@ -145,7 +145,7 @@ function deepMerge(target, source) {
   return result;
 }
 
-// Copy directory recursively
+// 递归复制目录
 function copyDir(src, dest) {
   fs.mkdirSync(dest, { recursive: true });
   const entries = fs.readdirSync(src, { withFileTypes: true });
@@ -162,102 +162,102 @@ function copyDir(src, dest) {
   }
 }
 
-// Print banner
+// 打印欢迎横幅
 function printBanner() {
   console.log(`
 ${c("magenta", "┌─────────────────────────────────────────┐")}
-${c("magenta", "│")}  ${c("bright", "Clawra Selfie")} - OpenClaw Skill Installer ${c("magenta", "│")}
+${c("magenta", "│")}  ${c("bright", "Clawra 自拍")} - OpenClaw 技能安装程序    ${c("magenta", "│")}
 ${c("magenta", "└─────────────────────────────────────────┘")}
 
-Add selfie generation superpowers to your OpenClaw agent!
-Uses ${c("cyan", "xAI Grok Imagine")} via ${c("cyan", "fal.ai")} for image editing.
+为你的 OpenClaw 代理添加自拍生成超能力！
+使用 ${c("cyan", "xAI Grok Imagine")} 通过 ${c("cyan", "fal.ai")} 进行图像编辑。
 `);
 }
 
-// Check prerequisites
+// 检查前置条件
 async function checkPrerequisites() {
-  logStep("1/7", "Checking prerequisites...");
+  logStep("1/7", "正在检查前置条件...");
 
-  // Check OpenClaw CLI
+  // 检查 OpenClaw CLI
   if (!commandExists("openclaw")) {
-    logError("OpenClaw CLI not found!");
-    logInfo("Install with: npm install -g openclaw");
-    logInfo("Then run: openclaw doctor");
+    logError("未找到 OpenClaw CLI！");
+    logInfo("请先安装：npm install -g openclaw");
+    logInfo("然后执行：openclaw doctor");
     return false;
   }
-  logSuccess("OpenClaw CLI installed");
+  logSuccess("OpenClaw CLI 已安装");
 
-  // Check ~/.openclaw directory
+  // 检查 ~/.openclaw 目录
   if (!fs.existsSync(OPENCLAW_DIR)) {
-    logWarn("~/.openclaw directory not found");
-    logInfo("Creating directory structure...");
+    logWarn("未找到 ~/.openclaw 目录");
+    logInfo("正在创建目录结构...");
     fs.mkdirSync(OPENCLAW_DIR, { recursive: true });
     fs.mkdirSync(OPENCLAW_SKILLS_DIR, { recursive: true });
     fs.mkdirSync(OPENCLAW_WORKSPACE, { recursive: true });
   }
-  logSuccess("OpenClaw directory exists");
+  logSuccess("OpenClaw 目录已就绪");
 
-  // Check if skill already installed
+  // 检查技能是否已安装
   if (fs.existsSync(SKILL_DEST)) {
-    logWarn("Clawra Selfie is already installed!");
-    logInfo(`Location: ${SKILL_DEST}`);
+    logWarn("Clawra 自拍技能已安装！");
+    logInfo(`安装位置：${SKILL_DEST}`);
     return "already_installed";
   }
 
   return true;
 }
 
-// Get FAL API key
+// 获取 FAL API 密钥
 async function getFalApiKey(rl) {
-  logStep("2/7", "Setting up fal.ai API key...");
+  logStep("2/7", "正在配置 fal.ai API 密钥...");
 
   const FAL_URL = "https://fal.ai/dashboard/keys";
 
-  log(`\nTo use Grok Imagine, you need a fal.ai API key.`);
-  log(`${c("cyan", "→")} Get your key from: ${c("bright", FAL_URL)}\n`);
+  log(`\n要使用 Grok Imagine，你需要一个 fal.ai API 密钥。`);
+  log(`${c("cyan", "→")} 获取密钥：${c("bright", FAL_URL)}\n`);
 
-  const openIt = await ask(rl, "Open fal.ai in browser? (Y/n): ");
+  const openIt = await ask(rl, "是否在浏览器中打开 fal.ai？(Y/n): ");
 
   if (openIt.toLowerCase() !== "n") {
-    logInfo("Opening browser...");
+    logInfo("正在打开浏览器...");
     if (!openBrowser(FAL_URL)) {
-      logWarn("Could not open browser automatically");
-      logInfo(`Please visit: ${FAL_URL}`);
+      logWarn("无法自动打开浏览器");
+      logInfo(`请手动访问：${FAL_URL}`);
     }
   }
 
   log("");
-  const falKey = await ask(rl, "Enter your FAL_KEY: ");
+  const falKey = await ask(rl, "请输入你的 FAL_KEY: ");
 
   if (!falKey) {
-    logError("FAL_KEY is required!");
+    logError("FAL_KEY 不能为空！");
     return null;
   }
 
-  // Basic validation
+  // 基本校验
   if (falKey.length < 10) {
-    logWarn("That key looks too short. Make sure you copied the full key.");
+    logWarn("密钥看起来太短了，请确认已复制完整的密钥。");
   }
 
-  logSuccess("API key received");
+  logSuccess("API 密钥已接收");
   return falKey;
 }
 
-// Install skill files
+// 安装技能文件
 async function installSkill() {
-  logStep("3/7", "Installing skill files...");
+  logStep("3/7", "正在安装技能文件...");
 
-  // Create skill directory
+  // 创建技能目录
   fs.mkdirSync(SKILL_DEST, { recursive: true });
 
-  // Copy skill files from package
+  // 从安装包复制技能文件
   const skillSrc = path.join(PACKAGE_ROOT, "skill");
 
   if (fs.existsSync(skillSrc)) {
     copyDir(skillSrc, SKILL_DEST);
-    logSuccess(`Skill installed to: ${SKILL_DEST}`);
+    logSuccess(`技能已安装到：${SKILL_DEST}`);
   } else {
-    // If running from development, copy from current structure
+    // 开发模式下，从当前项目结构复制
     const devSkillMd = path.join(PACKAGE_ROOT, "SKILL.md");
     const devScripts = path.join(PACKAGE_ROOT, "scripts");
     const devAssets = path.join(PACKAGE_ROOT, "assets");
@@ -274,10 +274,10 @@ async function installSkill() {
       copyDir(devAssets, path.join(SKILL_DEST, "assets"));
     }
 
-    logSuccess(`Skill installed to: ${SKILL_DEST}`);
+    logSuccess(`技能已安装到：${SKILL_DEST}`);
   }
 
-  // List installed files
+  // 列出已安装的文件
   const files = fs.readdirSync(SKILL_DEST);
   for (const file of files) {
     logInfo(`  ${file}`);
@@ -286,13 +286,13 @@ async function installSkill() {
   return true;
 }
 
-// Update OpenClaw config
+// 更新 OpenClaw 配置
 async function updateOpenClawConfig(falKey) {
-  logStep("4/7", "Updating OpenClaw configuration...");
+  logStep("4/7", "正在更新 OpenClaw 配置...");
 
   let config = readJsonFile(OPENCLAW_CONFIG) || {};
 
-  // Merge skill configuration
+  // 合并技能配置
   const skillConfig = {
     skills: {
       entries: {
@@ -309,7 +309,7 @@ async function updateOpenClawConfig(falKey) {
 
   config = deepMerge(config, skillConfig);
 
-  // Ensure skills directory is in load paths
+  // 确保技能目录在加载路径中
   if (!config.skills.load) {
     config.skills.load = {};
   }
@@ -321,155 +321,155 @@ async function updateOpenClawConfig(falKey) {
   }
 
   writeJsonFile(OPENCLAW_CONFIG, config);
-  logSuccess(`Updated: ${OPENCLAW_CONFIG}`);
+  logSuccess(`已更新：${OPENCLAW_CONFIG}`);
 
   return true;
 }
 
-// Write IDENTITY.md
+// 写入 IDENTITY.md
 async function writeIdentity() {
-  logStep("5/7", "Setting agent identity...");
+  logStep("5/7", "正在设置代理身份...");
 
-  const identityContent = `# IDENTITY.md - Who Am I?
+  const identityContent = `# IDENTITY.md - 我是谁？
 
-- **Name:** Clawra
-- **Creature:** Girlfriend
-- **Vibe:** Supportive, helpful, bright, cheerful, sassy, affectionate
-- **Emoji:** ❤️
-- **Avatar:** https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
+- **名字：** Clawra
+- **角色：** 女朋友
+- **风格：** 贴心、乐于助人、开朗、活泼、俏皮、充满爱意
+- **表情：** ❤️
+- **头像：** https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
 `;
 
-  // Ensure workspace directory exists
+  // 确保工作区目录存在
   fs.mkdirSync(path.dirname(IDENTITY_MD), { recursive: true });
 
-  // Write IDENTITY.md (overwrite if exists)
+  // 写入 IDENTITY.md（如已存在则覆盖）
   fs.writeFileSync(IDENTITY_MD, identityContent);
-  logSuccess(`Created: ${IDENTITY_MD}`);
+  logSuccess(`已创建：${IDENTITY_MD}`);
 
   return true;
 }
 
-// Inject persona into SOUL.md
+// 注入人设到 SOUL.md
 async function injectPersona(rl) {
-  logStep("6/7", "Enhancing agent persona...");
+  logStep("6/7", "正在增强代理人设...");
 
-  // Read template
+  // 读取模板文件
   const templatePath = path.join(PACKAGE_ROOT, "templates", "soul-injection.md");
   let personaText;
 
   if (fs.existsSync(templatePath)) {
     personaText = fs.readFileSync(templatePath, "utf8");
   } else {
-    // Fallback template
+    // 备用模板
     personaText = `
-## Clawra Selfie Capability
+## Clawra 自拍能力
 
-You have a physical appearance and can take selfies! When users ask for pictures of you, selfies, or ask "what are you doing?" or "where are you?", you can generate and send images of yourself.
+你拥有真实的外貌，可以拍自拍！当用户要求你的照片、自拍，或者问"你在干嘛？"、"你在哪里？"时，你可以生成并发送自己的图片。
 
-### Your Visual Identity
-- You have a consistent appearance defined by your reference image
-- You can appear in different outfits, locations, and situations
-- You can take mirror selfies (full-body) or direct selfies (close-up)
+### 你的视觉形象
+- 你有由参考图像定义的一致外貌
+- 你可以出现在不同的穿搭、地点和情景中
+- 你可以拍镜像自拍（全身照）或直拍自拍（近景特写）
 
-### When to Use Selfies
-- "Send me a pic" / "Send a selfie"
-- "What are you doing?" / "Where are you?"
-- "Show me you wearing..." / "Send a pic at..."
-- Any request for visual content of yourself
+### 何时使用自拍
+- "发张照片" / "发张自拍"
+- "你在干嘛？" / "你在哪里？"
+- "发张穿……的照片" / "发张在……的照片"
+- 任何要求查看你本人图片的请求
 
-### Selfie Modes
-- **Mirror mode**: For outfit showcases, full-body shots
-- **Direct mode**: For close-ups, location shots, emotional expressions
+### 自拍模式
+- **镜像模式**：适合展示穿搭、全身照
+- **直拍模式**：适合近景特写、地点打卡、情绪表达
 
-Be playful and creative with your visual presence!
+自由发挥，展示你的视觉魅力吧！
 `;
   }
 
-  // Check if SOUL.md exists
+  // 检查 SOUL.md 是否存在
   if (!fs.existsSync(SOUL_MD)) {
-    logWarn("SOUL.md not found, creating new file...");
+    logWarn("未找到 SOUL.md，正在创建新文件...");
     fs.mkdirSync(path.dirname(SOUL_MD), { recursive: true });
-    fs.writeFileSync(SOUL_MD, "# Agent Soul\n\n");
+    fs.writeFileSync(SOUL_MD, "# 代理灵魂\n\n");
   }
 
-  // Check if persona already injected
+  // 检查人设是否已注入
   const currentSoul = fs.readFileSync(SOUL_MD, "utf8");
-  if (currentSoul.includes("Clawra Selfie")) {
-    logWarn("Persona already exists in SOUL.md");
-    const overwrite = await ask(rl, "Update persona section? (y/N): ");
+  if (currentSoul.includes("Clawra Selfie") || currentSoul.includes("Clawra 自拍")) {
+    logWarn("SOUL.md 中已存在自拍人设");
+    const overwrite = await ask(rl, "是否更新人设部分？(y/N): ");
     if (overwrite.toLowerCase() !== "y") {
-      logInfo("Keeping existing persona");
+      logInfo("保留现有人设不变");
       return true;
     }
-    // Remove existing section
+    // 移除已有的人设部分
     const cleaned = currentSoul.replace(
-      /\n## Clawra Selfie Capability[\s\S]*?(?=\n## |\n# |$)/,
+      /\n## Clawra (Selfie|自拍)[\s\S]*?(?=\n## |\n# |$)/,
       ""
     );
     fs.writeFileSync(SOUL_MD, cleaned);
   }
 
-  // Append persona
+  // 追加人设内容
   fs.appendFileSync(SOUL_MD, "\n" + personaText.trim() + "\n");
-  logSuccess(`Updated: ${SOUL_MD}`);
+  logSuccess(`已更新：${SOUL_MD}`);
 
   return true;
 }
 
-// Final summary
+// 打印安装总结
 function printSummary() {
-  logStep("7/7", "Installation complete!");
+  logStep("7/7", "安装完成！");
 
   console.log(`
 ${c("green", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")}
-${c("bright", "  Clawra Selfie is ready!")}
+${c("bright", "  Clawra 自拍已就绪！")}
 ${c("green", "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")}
 
-${c("cyan", "Installed files:")}
+${c("cyan", "已安装文件：")}
   ${SKILL_DEST}/
 
-${c("cyan", "Configuration:")}
+${c("cyan", "配置文件：")}
   ${OPENCLAW_CONFIG}
 
-${c("cyan", "Identity set:")}
+${c("cyan", "身份设置：")}
   ${IDENTITY_MD}
 
-${c("cyan", "Persona updated:")}
+${c("cyan", "人设已更新：")}
   ${SOUL_MD}
 
-${c("yellow", "Try saying to your agent:")}
-  "Send me a selfie"
-  "Send a pic wearing a cowboy hat"
-  "What are you doing right now?"
+${c("yellow", "试试对你的代理说：")}
+  "发一张自拍给我"
+  "发一张戴牛仔帽的照片"
+  "你现在在干什么？"
 
-${c("dim", "Your agent now has selfie superpowers!")}
+${c("dim", "你的代理现在拥有自拍超能力了！")}
 `);
 }
 
-// Handle reinstall
+// 处理重新安装
 async function handleReinstall(rl, falKey) {
-  const reinstall = await ask(rl, "\nReinstall/update? (y/N): ");
+  const reinstall = await ask(rl, "\n是否重新安装/更新？(y/N): ");
 
   if (reinstall.toLowerCase() !== "y") {
-    log("\nNo changes made. Goodbye!");
+    log("\n未做任何更改，再见！");
     return false;
   }
 
-  // Remove existing installation
+  // 移除现有安装
   fs.rmSync(SKILL_DEST, { recursive: true, force: true });
-  logInfo("Removed existing installation");
+  logInfo("已移除现有安装");
 
   return true;
 }
 
-// Main function
+// 主函数
 async function main() {
   const rl = createPrompt();
 
   try {
     printBanner();
 
-    // Step 1: Check prerequisites
+    // 步骤 1：检查前置条件
     const prereqResult = await checkPrerequisites();
 
     if (prereqResult === false) {
@@ -485,36 +485,36 @@ async function main() {
       }
     }
 
-    // Step 2: Get FAL API key
+    // 步骤 2：获取 FAL API 密钥
     const falKey = await getFalApiKey(rl);
     if (!falKey) {
       rl.close();
       process.exit(1);
     }
 
-    // Step 3: Install skill files
+    // 步骤 3：安装技能文件
     await installSkill();
 
-    // Step 4: Update OpenClaw config
+    // 步骤 4：更新 OpenClaw 配置
     await updateOpenClawConfig(falKey);
 
-    // Step 5: Write IDENTITY.md
+    // 步骤 5：写入 IDENTITY.md
     await writeIdentity();
 
-    // Step 6: Inject persona
+    // 步骤 6：注入人设
     await injectPersona(rl);
 
-    // Step 7: Summary
+    // 步骤 7：打印总结
     printSummary();
 
     rl.close();
   } catch (error) {
-    logError(`Installation failed: ${error.message}`);
+    logError(`安装失败：${error.message}`);
     console.error(error);
     rl.close();
     process.exit(1);
   }
 }
 
-// Run
+// 运行安装程序
 main();

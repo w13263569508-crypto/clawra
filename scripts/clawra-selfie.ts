@@ -1,16 +1,16 @@
 /**
- * Grok Imagine to OpenClaw Integration
+ * Grok Imagine 与 OpenClaw 集成
  *
- * Generates images using xAI's Grok Imagine model via fal.ai
- * and sends them to messaging channels via OpenClaw.
+ * 通过 fal.ai 使用 xAI 的 Grok Imagine 模型生成图像，
+ * 并通过 OpenClaw 发送到各消息频道。
  *
- * Usage:
- *   npx ts-node grok-imagine-send.ts "<prompt>" "<channel>" ["<caption>"]
+ * 用法：
+ *   npx ts-node grok-imagine-send.ts "<提示词>" "<频道>" ["<说明文字>"]
  *
- * Environment variables:
- *   FAL_KEY - Your fal.ai API key
- *   OPENCLAW_GATEWAY_URL - OpenClaw gateway URL (default: http://localhost:18789)
- *   OPENCLAW_GATEWAY_TOKEN - Gateway auth token (optional)
+ * 环境变量：
+ *   FAL_KEY - 你的 fal.ai API 密钥
+ *   OPENCLAW_GATEWAY_URL - OpenClaw 网关地址（默认：http://localhost:18789）
+ *   OPENCLAW_GATEWAY_TOKEN - 网关认证令牌（可选）
  */
 
 import { exec } from "child_process";
@@ -18,7 +18,7 @@ import { promisify } from "util";
 
 const execAsync = promisify(exec);
 
-// Types
+// 类型定义
 interface GrokImagineInput {
   prompt: string;
   num_images?: number;
@@ -80,18 +80,18 @@ interface Result {
   revisedPrompt?: string;
 }
 
-// Check for fal.ai client
+// 检查 fal.ai 客户端是否可用
 let falClient: any;
 try {
   const { fal } = require("@fal-ai/client");
   falClient = fal;
 } catch {
-  // Will use fetch instead
+  // fal 客户端不可用，将使用 fetch 作为替代
   falClient = null;
 }
 
 /**
- * Generate image using Grok Imagine via fal.ai
+ * 通过 fal.ai 使用 Grok Imagine 生成图像
  */
 async function generateImage(
   input: GrokImagineInput
@@ -100,11 +100,11 @@ async function generateImage(
 
   if (!falKey) {
     throw new Error(
-      "FAL_KEY environment variable not set. Get your key from https://fal.ai/dashboard/keys"
+      "未设置 FAL_KEY 环境变量。请从 https://fal.ai/dashboard/keys 获取密钥"
     );
   }
 
-  // Use fal client if available
+  // 优先使用 fal 客户端
   if (falClient) {
     falClient.config({ credentials: falKey });
 
@@ -120,7 +120,7 @@ async function generateImage(
     return result.data as GrokImagineResponse;
   }
 
-  // Fallback to fetch
+  // 回退到 fetch 方式
   const response = await fetch("https://fal.run/xai/grok-imagine-image", {
     method: "POST",
     headers: {
@@ -137,27 +137,27 @@ async function generateImage(
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`Image generation failed: ${error}`);
+    throw new Error(`图像生成失败：${error}`);
   }
 
   return response.json();
 }
 
 /**
- * Send image via OpenClaw
+ * 通过 OpenClaw 发送图像
  */
 async function sendViaOpenClaw(
   message: OpenClawMessage,
   useCLI: boolean = true
 ): Promise<void> {
   if (useCLI) {
-    // Use OpenClaw CLI
+    // 使用 OpenClaw CLI 发送
     const cmd = `openclaw message send --action send --channel "${message.channel}" --message "${message.message}" --media "${message.media}"`;
     await execAsync(cmd);
     return;
   }
 
-  // Direct API call
+  // 直接调用 API
   const gatewayUrl =
     process.env.OPENCLAW_GATEWAY_URL || "http://localhost:18789";
   const gatewayToken = process.env.OPENCLAW_GATEWAY_TOKEN;
@@ -178,28 +178,28 @@ async function sendViaOpenClaw(
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`OpenClaw send failed: ${error}`);
+    throw new Error(`OpenClaw 发送失败：${error}`);
   }
 }
 
 /**
- * Main function: Generate image and send to channel
+ * 主函数：生成图像并发送到频道
  */
 async function generateAndSend(options: GenerateAndSendOptions): Promise<Result> {
   const {
     prompt,
     channel,
-    caption = "Generated with Grok Imagine",
+    caption = "由 Grok Imagine 生成",
     aspectRatio = "1:1",
     outputFormat = "jpeg",
     useClaudeCodeCLI = true,
   } = options;
 
-  console.log(`[INFO] Generating image with Grok Imagine...`);
-  console.log(`[INFO] Prompt: ${prompt}`);
-  console.log(`[INFO] Aspect ratio: ${aspectRatio}`);
+  console.log(`[信息] 正在使用 Grok Imagine 生成图像...`);
+  console.log(`[信息] 提示词：${prompt}`);
+  console.log(`[信息] 宽高比：${aspectRatio}`);
 
-  // Generate image
+  // 生成图像
   const imageResult = await generateImage({
     prompt,
     num_images: 1,
@@ -208,14 +208,14 @@ async function generateAndSend(options: GenerateAndSendOptions): Promise<Result>
   });
 
   const imageUrl = imageResult.images[0].url;
-  console.log(`[INFO] Image generated: ${imageUrl}`);
+  console.log(`[信息] 图像已生成：${imageUrl}`);
 
   if (imageResult.revised_prompt) {
-    console.log(`[INFO] Revised prompt: ${imageResult.revised_prompt}`);
+    console.log(`[信息] 优化后提示词：${imageResult.revised_prompt}`);
   }
 
-  // Send via OpenClaw
-  console.log(`[INFO] Sending to channel: ${channel}`);
+  // 通过 OpenClaw 发送
+  console.log(`[信息] 正在发送到频道：${channel}`);
 
   await sendViaOpenClaw(
     {
@@ -227,7 +227,7 @@ async function generateAndSend(options: GenerateAndSendOptions): Promise<Result>
     useClaudeCodeCLI
   );
 
-  console.log(`[INFO] Done! Image sent to ${channel}`);
+  console.log(`[信息] 完成！图像已发送到 ${channel}`);
 
   return {
     success: true,
@@ -238,26 +238,26 @@ async function generateAndSend(options: GenerateAndSendOptions): Promise<Result>
   };
 }
 
-// CLI entry point
+// 命令行入口
 async function main() {
   const args = process.argv.slice(2);
 
   if (args.length < 2) {
     console.log(`
-Usage: npx ts-node grok-imagine-send.ts <prompt> <channel> [caption] [aspect_ratio] [output_format]
+用法：npx ts-node grok-imagine-send.ts <提示词> <频道> [说明文字] [宽高比] [输出格式]
 
-Arguments:
-  prompt        - Image description (required)
-  channel       - Target channel (required) e.g., #general, @user
-  caption       - Message caption (default: 'Generated with Grok Imagine')
-  aspect_ratio  - Image ratio (default: 1:1) Options: 2:1, 16:9, 4:3, 1:1, 3:4, 9:16
-  output_format - Image format (default: jpeg) Options: jpeg, png, webp
+参数：
+  提示词        - 图像描述（必填）
+  频道          - 目标频道（必填），例如 #general、@user
+  说明文字      - 消息说明（默认：'由 Grok Imagine 生成'）
+  宽高比        - 图像比例（默认：1:1），可选：2:1、16:9、4:3、1:1、3:4、9:16
+  输出格式      - 图像格式（默认：jpeg），可选：jpeg、png、webp
 
-Environment:
-  FAL_KEY       - Your fal.ai API key (required)
+环境变量：
+  FAL_KEY       - 你的 fal.ai API 密钥（必填）
 
-Example:
-  FAL_KEY=your_key npx ts-node grok-imagine-send.ts "A cyberpunk city" "#art" "Check this out!"
+示例：
+  FAL_KEY=your_key npx ts-node grok-imagine-send.ts "赛博朋克城市" "#art" "快看这个！"
 `);
     process.exit(1);
   }
@@ -273,15 +273,15 @@ Example:
       outputFormat: outputFormat as OutputFormat,
     });
 
-    console.log("\n--- Result ---");
+    console.log("\n--- 结果 ---");
     console.log(JSON.stringify(result, null, 2));
   } catch (error) {
-    console.error(`[ERROR] ${(error as Error).message}`);
+    console.error(`[错误] ${(error as Error).message}`);
     process.exit(1);
   }
 }
 
-// Export for module use
+// 导出供模块使用
 export {
   generateImage,
   sendViaOpenClaw,
@@ -293,7 +293,7 @@ export {
   Result,
 };
 
-// Run if executed directly
+// 直接执行时运行
 if (require.main === module) {
   main();
 }

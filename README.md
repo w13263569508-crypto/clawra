@@ -2,55 +2,55 @@
 <img width="300"  alt="image" src="https://github.com/user-attachments/assets/41512c51-e61d-4550-b461-eed06a1b0ec8" />
 
 
-## Quick Start
+## 快速开始
 
 ```bash
 npx clawra@latest
 ```
 
-This will:
-1. Check OpenClaw is installed
-2. Guide you to get a fal.ai API key
-3. Install the skill to `~/.openclaw/skills/clawra-selfie/`
-4. Configure OpenClaw to use the skill
-5. Add selfie capabilities to your agent's SOUL.md
+执行后将会：
+1. 检查 OpenClaw 是否已安装
+2. 引导你获取 fal.ai API 密钥
+3. 将技能安装到 `~/.openclaw/skills/clawra-selfie/`
+4. 配置 OpenClaw 使用该技能
+5. 在你的代理 SOUL.md 中添加自拍能力
 
-## What It Does
+## 功能介绍
 
-Clawra Selfie enables your OpenClaw agent to:
-- **Generate selfies** using a consistent reference image
-- **Send photos** across all messaging platforms (Discord, Telegram, WhatsApp, etc.)
-- **Respond visually** to "what are you doing?" and "send a pic" requests
+Clawra 自拍功能让你的 OpenClaw 代理具备：
+- **生成自拍照** —— 使用固定参考图像保持外观一致
+- **跨平台发送图片** —— 支持 Discord、Telegram、WhatsApp 等所有消息平台
+- **可视化回应** —— 响应"你在干嘛？"和"发张照片"等请求
 
-### Selfie Modes
+### 自拍模式
 
-| Mode | Best For | Keywords |
-|------|----------|----------|
-| **Mirror** | Full-body shots, outfits | wearing, outfit, fashion |
-| **Direct** | Close-ups, locations | cafe, beach, portrait, smile |
+| 模式 | 适用场景 | 触发关键词 |
+|------|----------|------------|
+| **镜像（Mirror）** | 全身照、展示穿搭 | wearing、outfit、fashion |
+| **直拍（Direct）** | 近景特写、地点打卡 | cafe、beach、portrait、smile |
 
-## Prerequisites
+## 前置条件
 
-- [OpenClaw](https://github.com/openclaw/openclaw) installed and configured
-- [fal.ai](https://fal.ai) account (free tier available)
+- 已安装并配置 [OpenClaw](https://github.com/openclaw/openclaw)
+- 拥有 [fal.ai](https://fal.ai) 账号（有免费额度）
 
-## Manual Installation
+## 手动安装
 
-If you prefer manual setup:
+如需手动配置，请按以下步骤操作：
 
-### 1. Get API Key
+### 1. 获取 API 密钥
 
-Visit [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys) and create an API key.
+前往 [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys) 创建 API 密钥。
 
-### 2. Clone the Skill
+### 2. 克隆技能仓库
 
 ```bash
 git clone https://github.com/SumeLabs/clawra ~/.openclaw/skills/clawra-selfie
 ```
 
-### 3. Configure OpenClaw
+### 3. 配置 OpenClaw
 
-Add to `~/.openclaw/openclaw.json`:
+在 `~/.openclaw/openclaw.json` 中添加以下内容：
 
 ```json
 {
@@ -67,59 +67,59 @@ Add to `~/.openclaw/openclaw.json`:
 }
 ```
 
-### 4. Update SOUL.md
+### 4. 更新 SOUL.md
 
-Add the selfie persona to `~/.openclaw/workspace/SOUL.md`:
+在 `~/.openclaw/workspace/SOUL.md` 中添加自拍人设：
 
 ```markdown
-## Clawra Selfie Capability
+## Clawra 自拍能力
 
-You have a physical appearance and can take selfies!
-When users ask for pictures, use the clawra-selfie skill.
+你有真实的外貌，可以拍自拍！
+当用户要求图片时，请使用 clawra-selfie 技能。
 ```
 
-## Usage Examples
+## 使用示例
 
-Once installed, your agent responds to:
+安装完成后，你的代理将响应以下请求：
 
 ```
-"Send me a selfie"
-"Send a pic wearing a cowboy hat"
-"What are you doing right now?"
-"Show me you at a coffee shop"
+"发一张自拍给我"
+"发一张戴牛仔帽的照片"
+"你现在在干什么？"
+"发张你在咖啡馆的照片"
 ```
 
-## Reference Image
+## 参考图像
 
-The skill uses a fixed reference image hosted on CDN:
+该技能使用托管在 CDN 上的固定参考图像：
 
 ```
 https://cdn.jsdelivr.net/gh/SumeLabs/clawra@main/assets/clawra.png
 ```
 
-This ensures consistent appearance across all generated images.
+该参考图像确保每次生成的图片外观保持一致。
 
-## Technical Details
+## 技术细节
 
-- **Image Generation**: xAI Grok Imagine via fal.ai
-- **Messaging**: OpenClaw Gateway API
-- **Supported Platforms**: Discord, Telegram, WhatsApp, Slack, Signal, MS Teams
+- **图像生成**：xAI Grok Imagine，通过 fal.ai 调用
+- **消息发送**：OpenClaw 网关 API
+- **支持平台**：Discord、Telegram、WhatsApp、Slack、Signal、MS Teams
 
-## Project Structure
+## 项目结构
 
 ```
 clawra/
 ├── bin/
-│   └── cli.js           # npx installer
+│   └── cli.js           # npx 安装程序
 ├── skill/
-│   ├── SKILL.md         # Skill definition
-│   ├── scripts/         # Generation scripts
-│   └── assets/          # Reference image
+│   ├── SKILL.md         # 技能定义文档
+│   ├── scripts/         # 图像生成脚本
+│   └── assets/          # 参考图像资源
 ├── templates/
-│   └── soul-injection.md # Persona template
+│   └── soul-injection.md # 人设注入模板
 └── package.json
 ```
 
-## License
+## 开源协议
 
 MIT
